@@ -31,17 +31,13 @@ func (c *Client) MetricSearch(params url.Values) (resp MetricSearchResponse, err
 }
 
 // GetMetricsValue will fetch the metric value from the response
-func (d *DashboardResponseData) GetMetricsValue(p *Client) {
+func (d *DashboardResponseData) GetMetricsValue(p *Client, query string) []MetricResult {
 	pquery := make(url.Values)
-
-	for _, data := range d.Data {
-		for _, panel := range data.Panels {
-			pquery.Set("query", data.Metrics[panel].MetricName)
-			presp, err := p.MetricSearch(pquery)
-			if err != nil {
-				log.Fatal(fmt.Sprintf("Prometheus Error: "), err)
-			}
-			data.Metrics[panel].MetricValue = append(data.Metrics[panel].MetricValue, presp.Data.Result...)
-		}
+	pquery.Set("query", ParseQuery(query, "", "node-exporter.dashboard-testing.svc.cluster.local:9100", "node-exporter", "5m"))
+	presp, err := p.MetricSearch(pquery)
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Prometheus Error: "), err)
 	}
+	return presp.Data.Result
+
 }

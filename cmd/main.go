@@ -3,9 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
-	"math/big"
 	"net/url"
-	"time"
+
+	"github.com/fatih/color"
+	"github.com/rodaine/table"
 
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -21,11 +22,6 @@ var (
 	token              = kingpin.Flag("token", "Bearer Token for connecting to Grafana/Prometheus").String()
 	//interval          = kingpin.Flag("interval", "Set interval for monitoring").Default("1m").Duration()
 )
-
-type MetricOutput struct {
-	MetricName  string
-	MetricValue []MetricResult
-}
 
 // GetGrafanaClient will create a client for Grafana HTTP URL
 func GetGrafanaClient(baseURL, username, password, token string) *Client {
@@ -59,43 +55,31 @@ func GetPrometheusClient(baseURL, token, promusername, prompassword string) *Cli
 	return p
 }
 
-// DisplayReport will display the end report on stdout
 func DisplayReport(d *DashboardResponseData) {
-	for i := 0; i < len(d.Data); i++ {
-		fmt.Printf("Dashboard Name: %s ", d.Data[i].Title)
-		fmt.Println()
-		for j := 0; j < len(d.Data[i].Panels); j++ {
-			fmt.Printf(" Panel Title: %s ", d.Data[i].Panels[j])
-			fmt.Println()
-			fmt.Printf("  Metric Name: %s ", d.Data[i].Metrics[d.Data[i].Panels[j]].MetricName)
-			fmt.Println()
-			if len(d.Data[i].Metrics[d.Data[i].Panels[j]].MetricValue) != 0 {
-				fmt.Printf("   TimeStamp: %v ", ParseEpoch(d.Data[i].Metrics[d.Data[i].Panels[j]].MetricValue[0].Value[0]))
-				fmt.Println()
-				fmt.Printf("   Metric Value: %s ", d.Data[i].Metrics[d.Data[i].Panels[j]].MetricValue[0].Value[1])
-			} else {
-				fmt.Printf("   TimeStamp: %v ", d.Data[i].Metrics[d.Data[i].Panels[j]].MetricValue)
-				fmt.Println()
-				fmt.Printf("   Metric Value: %s ", d.Data[i].Metrics[d.Data[i].Panels[j]].MetricValue)
+	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+	columnFmt := color.New(color.FgYellow).SprintfFunc()
+	tbl := table.New("Dashboard Name", "Row Title", "Panel Title", "Labels", "TimeStamp", "Metric Value")
+	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+	for _, uid := range d.UID {
+		for _, row := range d.Rows[uid] {
+			for _, panel := range d.FilterResp[uid].FilterPanel[row] {
+				for _, target := range panel.Targets {
+					if len(d.FilterResp[uid].Metric[target.Expr]) > 0 {
+						tbl.AddRow(d.DashboardResponse[uid].Dashboard.Title, row, panel.Title, target.Legends, ParseEpoch(d.FilterResp[uid].Metric[target.Expr][0].Value[0]), d.FilterResp[uid].Metric[target.Expr][0].Value[1])
+					} else {
+						tbl.AddRow(d.DashboardResponse[uid].Dashboard.Title, row, panel.Title, target.Legends, d.FilterResp[uid].Metric[target.Expr], d.FilterResp[uid].Metric[target.Expr])
+					}
+
+				}
+
 			}
-			fmt.Println()
+
 		}
-		fmt.Println()
-		fmt.Println()
-	}
-
-}
-
-func ParseEpoch(timestamp interface{}) time.Time {
-	flt, _, err := big.ParseFloat(fmt.Sprint("", timestamp), 10, 0, big.ToNearestEven)
-	if err != nil {
-		log.Fatal(err)
 
 	}
-	i, _ := flt.Int64()
-	return time.Unix(i, 0)
-}
+	tbl.Print()
 
+}
 func main() {
 	kingpin.UsageTemplate(kingpin.CompactUsageTemplate).Version("1.0").Author("Vibhu Prashar")
 	kingpin.CommandLine.Help = "A tool to monitor results displayed on Grafana Dashboard Panels"
@@ -104,10 +88,9 @@ func main() {
 	d := new(DashboardResponseData)
 	d.GetDashboards(*grafanaClient, *grafanaDashboards)
 	d.GetDashboardByUID(*grafanaClient)
-	d.GetDashboardModelFromResponse(*grafanaClient)
-	d.GetDashboardMetricsFromResponse(*grafanaClient)
+	d.FilterData()
 	prometheusClient := GetPrometheusClient(*prometheusBaseURL, *token, *prometheusUsername, *prometheusPassword)
-	d.GetMetricsValue(prometheusClient)
+	d.GetDashboardMetricsFromResponse(prometheusClient)
 	DisplayReport(d)
 
 }

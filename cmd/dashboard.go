@@ -6,32 +6,29 @@ import (
 	"net/url"
 )
 
-type DashboardMeta struct {
-	IsStarred bool   `json:"isStarred"`
-	Slug      string `json:"slug"`
-	Folder    int64  `json:"folderId"`
-	URL       string `json:"url"`
-}
 type DashboardTargets struct {
-	Expr string `json:"expr"`
+	Legends string `json:"legendFormat"`
+	Expr    string `json:"expr"`
 }
 type DashboardPanel struct {
-	DataSource map[string]string  `json:"datasource"`
-	Targets    []DashboardTargets `json:"targets"`
-	Title      string             `json:"title"`
+	DataSource  map[string]string  `json:"datasource"`
+	Targets     []DashboardTargets `json:"targets"`
+	Description string             `json:"description"`
+	Title       string             `json:"title"`
+	Type        string             `json:"type"`
 }
-type DashboardModel struct {
+type FilterData struct {
+	FilterPanel map[string][]DashboardPanel
+	Metric      map[string][]MetricResult
+}
+type DashboardResponse struct {
 	Panels []DashboardPanel `json:"panels"`
 	Title  string           `json:"title"`
 	UID    string           `json:"uid"`
 	//Annotations map[string]interface{} `json:"annotations"`
 }
-type Dashboard struct {
-	Meta      DashboardMeta  `json:"meta"`
-	Model     DashboardModel `json:"dashboard"`
-	FolderID  int64          `json:"folderId"`
-	FolderUID string         `json:"folderUid"`
-	OverWrite bool           `json:"overwrite"`
+type Response struct {
+	Dashboard DashboardResponse `json:"dashboard"`
 }
 type FolderDashboardSearchResponse struct {
 	ID          uint     `json:"id"`
@@ -48,29 +45,23 @@ type FolderDashboardSearchResponse struct {
 	FolderTitle string   `json:"folderTitle"`
 	FolderURL   string   `json:"folderUrl"`
 }
-type DashboardData struct {
-	Title   string
-	Panels  []string
-	Metrics map[string]*MetricOutput
-}
 
 type DashboardResponseData struct {
 	UID               []string
-	DashboardResponse []*Dashboard
-	Model             []*DashboardModel
-	Data              []*DashboardData
+	DashboardResponse map[string]*Response
+	Rows              map[string][]string
+	FilterResp        map[string]*FilterData
 }
 
-func (c *Client) dashboard(path string) (*Dashboard, error) {
-	result := &Dashboard{}
+func (c *Client) dashboard(path string) (*Response, error) {
+	result := &Response{}
 	err := c.request("GET", path, nil, nil, &result)
 	if err != nil {
 		return nil, err
 	}
-	result.FolderID = result.Meta.Folder
 	return result, err
 }
-func (c *Client) DashboardByUID(uid string) (*Dashboard, error) {
+func (c *Client) DashboardByUID(uid string) (*Response, error) {
 	return c.dashboard(fmt.Sprintf("/api/dashboards/uid/%s", uid))
 
 }
@@ -100,48 +91,54 @@ func (d *DashboardResponseData) GetDashboards(c Client, dashboards []string) {
 
 // GetDashboardByUID will fetch the dashboards by uid from grafana
 func (d *DashboardResponseData) GetDashboardByUID(c Client) {
-	for _, val := range d.UID {
-		res, err := c.DashboardByUID(val)
+	d.DashboardResponse = make(map[string]*Response)
+	for _, uid := range d.UID {
+		res, err := c.DashboardByUID(uid)
 		if err != nil {
 			log.Fatal(err)
 		}
-		//result.Model.Panels)
-		d.DashboardResponse = append(d.DashboardResponse, res)
+		d.DashboardResponse[uid] = res
 	}
 }
 
-// GetDashboardModelFromResponse will fetch the Dashboard Model from the response
-func (d *DashboardResponseData) GetDashboardModelFromResponse(c Client) {
-	for _, val := range d.DashboardResponse {
-		d.Model = append(d.Model, &val.Model)
+// GetDashboardMetricsFromResponse fetch metric value from prometheus
+func (d *DashboardResponseData) GetDashboardMetricsFromResponse(p *Client) {
+	for _, uid := range d.UID {
+		d.FilterResp[uid].Metric = make(map[string][]MetricResult)
+		for _, title := range d.Rows[uid] {
+			for _, panel := range d.FilterResp[uid].FilterPanel[title] {
+				for _, target := range panel.Targets {
+					res := d.GetMetricsValue(p, target.Expr)
+					d.FilterResp[uid].Metric[target.Expr] = res
+
+				}
+			}
+
+		}
+
 	}
 }
 
-// GetDashboardMetricsFromResponse will fetch the necessary data from the model object. It contains Panel title, metrics etc
-func (d *DashboardResponseData) GetDashboardMetricsFromResponse(c Client) {
-	if len(d.Model) == 0 {
-		log.Fatal("No Dashboard response returned")
-	}
-	for i := 0; i < len(d.Model); i++ {
-		Panels := d.Model[i].Panels
-		dd := new(DashboardData)
-		dd.Title = d.Model[i].Title
-		dd.Metrics = make(map[string]*MetricOutput)
-		if len(Panels) == 0 {
-			log.Fatal("No Dashboard panels returned")
-		}
-		for j := 0; j < len(Panels); j++ {
-			Targets := Panels[j].Targets
-			if len(Targets) == 0 {
-				log.Fatal("No Dashboard targets returned")
+// FilterData will filter the dashboard data on the basis of how many rows are present in dashboard and corresponding to rows how many panels are there.
+func (d *DashboardResponseData) FilterData() {
+	fd := new(FilterData)
+	fd.FilterPanel = make(map[string][]DashboardPanel)
+	title := ""
+	d.FilterResp = make(map[string]*FilterData)
+	d.Rows = make(map[string][]string)
+	for _, uid := range d.UID {
+		for _, res := range d.DashboardResponse[uid].Dashboard.Panels {
+			if title == "" {
+				title = res.Title
 			}
-			dd.Panels = append(dd.Panels, Panels[j].Title)
-			mo := new(MetricOutput)
-			for k := 0; k < len(Targets); k++ {
-				mo.MetricName = Targets[k].Expr
-				dd.Metrics[Panels[j].Title] = mo
+			if res.Type == "row" {
+				d.Rows[uid] = append(d.Rows[uid], res.Title)
+				title = res.Title
+			}
+			if res.Type != "row" && res.Type != "text" {
+				fd.FilterPanel[title] = append(fd.FilterPanel[title], res)
 			}
 		}
-		d.Data = append(d.Data, dd)
+		d.FilterResp[uid] = fd
 	}
 }
