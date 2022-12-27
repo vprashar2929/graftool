@@ -92,6 +92,9 @@ func (d *DashboardResponseData) GetDashboards(c Client, dashboards []string) {
 // GetDashboardByUID will fetch the dashboards by uid from grafana
 func (d *DashboardResponseData) GetDashboardByUID(c Client) {
 	d.DashboardResponse = make(map[string]*Response)
+	if len(d.UID) == 0 {
+		log.Fatal("No Dashboard Exists on Grafana")
+	}
 	for _, uid := range d.UID {
 		res, err := c.DashboardByUID(uid)
 		if err != nil {
@@ -105,8 +108,17 @@ func (d *DashboardResponseData) GetDashboardByUID(c Client) {
 func (d *DashboardResponseData) GetDashboardMetricsFromResponse(p *Client) {
 	for _, uid := range d.UID {
 		d.FilterResp[uid].Metric = make(map[string][]MetricResult)
+		if len(d.Rows[uid]) == 0 {
+			log.Fatal("No Rows found in Grafana Dashboard -> ", d.DashboardResponse[uid].Dashboard.Title)
+		}
 		for _, title := range d.Rows[uid] {
+			if len(d.FilterResp[uid].FilterPanel[title]) == 0 {
+				log.Fatal("No Panels found in Grafana Dashboard -> ", d.DashboardResponse[uid].Dashboard.Title)
+			}
 			for _, panel := range d.FilterResp[uid].FilterPanel[title] {
+				if len(panel.Targets) == 0 {
+					log.Fatal("No Metrics found in Grafana Dashboard -> ", d.DashboardResponse[uid].Dashboard.Title)
+				}
 				for _, target := range panel.Targets {
 					res := d.GetMetricsValue(p, target.Expr)
 					d.FilterResp[uid].Metric[target.Expr] = res
@@ -127,6 +139,9 @@ func (d *DashboardResponseData) FilterData() {
 	d.FilterResp = make(map[string]*FilterData)
 	d.Rows = make(map[string][]string)
 	for _, uid := range d.UID {
+		if len(d.DashboardResponse[uid].Dashboard.Panels) == 0 {
+			log.Fatal("No Panels found in Grafana Dashboard -> ", d.DashboardResponse[uid].Dashboard.Title)
+		}
 		for _, res := range d.DashboardResponse[uid].Dashboard.Panels {
 			if title == "" {
 				title = res.Title

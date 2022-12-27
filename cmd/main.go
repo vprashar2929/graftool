@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 
-	"github.com/fatih/color"
-	"github.com/rodaine/table"
+	"github.com/jedib0t/go-pretty/v6/table"
 
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -56,29 +56,31 @@ func GetPrometheusClient(baseURL, token, promusername, prompassword string) *Cli
 }
 
 func DisplayReport(d *DashboardResponseData) {
-	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-	columnFmt := color.New(color.FgYellow).SprintfFunc()
-	tbl := table.New("Dashboard Name", "Row Title", "Panel Title", "Labels", "TimeStamp", "Metric Value")
-	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.SetStyle(table.StyleRounded)
+	t.SetAutoIndex(true)
+	t.AppendHeader(table.Row{"Row Title", "Panel Title", "Legends", "TimeStamp", "Metric Value"})
 	for _, uid := range d.UID {
+		t.SetTitle(d.DashboardResponse[uid].Dashboard.Title)
+		//t.SetCaption(d.DashboardResponse[uid].Dashboard.Title)
 		for _, row := range d.Rows[uid] {
 			for _, panel := range d.FilterResp[uid].FilterPanel[row] {
 				for _, target := range panel.Targets {
 					if len(d.FilterResp[uid].Metric[target.Expr]) > 0 {
-						tbl.AddRow(d.DashboardResponse[uid].Dashboard.Title, row, panel.Title, target.Legends, ParseEpoch(d.FilterResp[uid].Metric[target.Expr][0].Value[0]), d.FilterResp[uid].Metric[target.Expr][0].Value[1])
+						t.AppendRow(table.Row{row, panel.Title, target.Legends, ParseEpoch(d.FilterResp[uid].Metric[target.Expr][0].Value[0]), d.FilterResp[uid].Metric[target.Expr][0].Value[1]})
 					} else {
-						tbl.AddRow(d.DashboardResponse[uid].Dashboard.Title, row, panel.Title, target.Legends, d.FilterResp[uid].Metric[target.Expr], d.FilterResp[uid].Metric[target.Expr])
+						t.AppendRow(table.Row{row, panel.Title, target.Legends, d.FilterResp[uid].Metric[target.Expr], d.FilterResp[uid].Metric[target.Expr]})
 					}
-
 				}
 
 			}
+			t.AppendSeparator()
 
 		}
-
 	}
-	tbl.Print()
 
+	t.Render()
 }
 func main() {
 	kingpin.UsageTemplate(kingpin.CompactUsageTemplate).Version("1.0").Author("Vibhu Prashar")
