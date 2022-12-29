@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/jedib0t/go-pretty/v6/table"
 
@@ -18,9 +19,12 @@ var (
 	prometheusUsername = kingpin.Flag("prometheus-username", "Username for Prometheus Server. If token is not specified then provide username").String()
 	prometheusPassword = kingpin.Flag("prometheus-password", "Password for Prometheus Server. If token is not specified then provide password").String()
 	prometheusBaseURL  = kingpin.Flag("prometheus.web.listen-address", "Address on which Prometheus listen for UI,API").Required().String()
-	grafanaDashboards  = kingpin.Flag("grafana-dashboards", "List of Grafana Dashboards to be monitored").Required().Strings()
+	grafanaDashboard   = kingpin.Flag("grafana-dashboard", "Name of Grafana Dashboard to be monitored").Required().Strings()
 	token              = kingpin.Flag("token", "Bearer Token for connecting to Grafana/Prometheus").String()
 	//interval          = kingpin.Flag("interval", "Set interval for monitoring").Default("1m").Duration()
+)
+var (
+	startTime int64
 )
 
 // GetGrafanaClient will create a client for Grafana HTTP URL
@@ -63,7 +67,6 @@ func DisplayReport(d *DashboardResponseData) {
 	t.AppendHeader(table.Row{"Row Title", "Panel Title", "Legends", "TimeStamp", "Metric Value"})
 	for _, uid := range d.UID {
 		t.SetTitle(d.DashboardResponse[uid].Dashboard.Title)
-		//t.SetCaption(d.DashboardResponse[uid].Dashboard.Title)
 		for _, row := range d.Rows[uid] {
 			for _, panel := range d.FilterResp[uid].FilterPanel[row] {
 				for _, target := range panel.Targets {
@@ -78,9 +81,10 @@ func DisplayReport(d *DashboardResponseData) {
 			t.AppendSeparator()
 
 		}
+		t.SetCaption(fmt.Sprint("Dashboard Link: http://%s%s?from=%d&to=%d"), *grafanaBaseURL, d.URL[uid], startTime, time.Now().UnixMilli())
+		t.Render()
 	}
 
-	t.Render()
 }
 func main() {
 	kingpin.UsageTemplate(kingpin.CompactUsageTemplate).Version("1.0").Author("Vibhu Prashar")
@@ -88,10 +92,11 @@ func main() {
 	kingpin.Parse()
 	grafanaClient := GetGrafanaClient(*grafanaBaseURL, *grafanaUsername, *grafanaPassword, *token)
 	d := new(DashboardResponseData)
-	d.GetDashboards(*grafanaClient, *grafanaDashboards)
+	d.GetDashboards(*grafanaClient, *grafanaDashboard)
 	d.GetDashboardByUID(*grafanaClient)
 	d.FilterData()
 	prometheusClient := GetPrometheusClient(*prometheusBaseURL, *token, *prometheusUsername, *prometheusPassword)
+	startTime = time.Now().UnixMilli()
 	d.GetDashboardMetricsFromResponse(prometheusClient)
 	DisplayReport(d)
 

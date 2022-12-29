@@ -47,8 +47,8 @@ Flags:
                  Password for Prometheus Server. If token is not specified then provide password
   --prometheus.web.listen-address=PROMETHEUS.WEB.LISTEN-ADDRESS
                  Address on which Prometheus listen for UI,API
-  --grafana-dashboards=GRAFANA-DASHBOARDS ...
-                 List of Grafana Dashboards to be monitored
+  --grafana-dashboard=GRAFANA-DASHBOARDS ...
+                 Name of Grafana Dashboard to be monitored
   --token=TOKEN  Bearer Token for connecting to Grafana/Prometheus
   --version      Show application version.
 ```

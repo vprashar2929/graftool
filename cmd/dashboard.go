@@ -48,6 +48,7 @@ type FolderDashboardSearchResponse struct {
 
 type DashboardResponseData struct {
 	UID               []string
+	URL               map[string]string
 	DashboardResponse map[string]*Response
 	Rows              map[string][]string
 	FilterResp        map[string]*FilterData
@@ -74,6 +75,7 @@ func (c *Client) FolderDashboardSearch(params url.Values) (resp []FolderDashboar
 
 // GetDashboards will fetch the uid of dashboards which matches the search
 func (d *DashboardResponseData) GetDashboards(c Client, dashboards []string) {
+	d.URL = make(map[string]string)
 	for _, dashboard := range dashboards {
 		query := make(url.Values)
 		query.Set("query", dashboard)
@@ -83,7 +85,7 @@ func (d *DashboardResponseData) GetDashboards(c Client, dashboards []string) {
 		}
 		for _, val := range resp {
 			d.UID = append(d.UID, val.UID)
-
+			d.URL[val.UID] = val.URL
 		}
 	}
 
