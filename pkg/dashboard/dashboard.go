@@ -1,9 +1,12 @@
-package main
+package dashboard
 
 import (
 	"fmt"
 	"log"
 	"net/url"
+
+	"github.com/vprashar2929/graftool/pkg/client"
+	"github.com/vprashar2929/graftool/pkg/query"
 )
 
 type DashboardTargets struct {
@@ -19,7 +22,7 @@ type DashboardPanel struct {
 }
 type FilterData struct {
 	FilterPanel map[string][]DashboardPanel
-	Metric      map[string][]MetricResult
+	Metric      map[string][]query.MetricResult
 }
 type DashboardResponse struct {
 	Panels []DashboardPanel `json:"panels"`
@@ -54,32 +57,35 @@ type DashboardResponseData struct {
 	FilterResp        map[string]*FilterData
 }
 
-func (c *Client) dashboard(path string) (*Response, error) {
+func dashboard(path string, c *client.Client) (*Response, error) {
 	result := &Response{}
-	err := c.request("GET", path, nil, nil, &result)
+	err := client.GetRequest("GET", path, c, nil, &result)
 	if err != nil {
 		return nil, err
 	}
 	return result, err
 }
-func (c *Client) DashboardByUID(uid string) (*Response, error) {
-	return c.dashboard(fmt.Sprintf("/api/dashboards/uid/%s", uid))
+func DashboardByUID(uid string, c *client.Client) (*Response, error) {
+	return dashboard(fmt.Sprintf("/api/dashboards/uid/%s", uid), c)
 
 }
 
 // FolderDashboardSearch uses the folder and dashboard search endpoint to find dashboards based on the params passed in.
-func (c *Client) FolderDashboardSearch(params url.Values) (resp []FolderDashboardSearchResponse, err error) {
-	err = c.request("GET", "/api/search", params, nil, &resp)
-	return
+func FolderDashboardSearch(params url.Values, c *client.Client) (resp []FolderDashboardSearchResponse, err error) {
+	err = client.GetRequest("GET", "/api/search", c, params, &resp)
+	if err != nil {
+		return nil, err
+	}
+	return resp, err
 }
 
 // GetDashboards will fetch the uid of dashboards which matches the search
-func (d *DashboardResponseData) GetDashboards(c Client, dashboards []string) {
+func GetDashboards(c *client.Client, d *DashboardResponseData, dashboards []string) {
 	d.URL = make(map[string]string)
 	for _, dashboard := range dashboards {
 		query := make(url.Values)
 		query.Set("query", dashboard)
-		resp, err := c.FolderDashboardSearch(query)
+		resp, err := FolderDashboardSearch(query, c)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -92,13 +98,13 @@ func (d *DashboardResponseData) GetDashboards(c Client, dashboards []string) {
 }
 
 // GetDashboardByUID will fetch the dashboards by uid from grafana
-func (d *DashboardResponseData) GetDashboardByUID(c Client) {
+func GetDashboardByUID(c *client.Client, d *DashboardResponseData) {
 	d.DashboardResponse = make(map[string]*Response)
 	if len(d.UID) == 0 {
 		log.Fatal("No Dashboard Exists on Grafana")
 	}
 	for _, uid := range d.UID {
-		res, err := c.DashboardByUID(uid)
+		res, err := DashboardByUID(uid, c)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -107,9 +113,9 @@ func (d *DashboardResponseData) GetDashboardByUID(c Client) {
 }
 
 // GetDashboardMetricsFromResponse fetch metric value from prometheus
-func (d *DashboardResponseData) GetDashboardMetricsFromResponse(p *Client) {
+func GetDashboardMetricsFromResponse(p *client.Client, d *DashboardResponseData) {
 	for _, uid := range d.UID {
-		d.FilterResp[uid].Metric = make(map[string][]MetricResult)
+		d.FilterResp[uid].Metric = make(map[string][]query.MetricResult)
 		if len(d.Rows[uid]) == 0 {
 			log.Fatal("No Rows found in Grafana Dashboard -> ", d.DashboardResponse[uid].Dashboard.Title)
 		}
@@ -122,7 +128,7 @@ func (d *DashboardResponseData) GetDashboardMetricsFromResponse(p *Client) {
 					log.Fatal("No Metrics found in Grafana Dashboard -> ", d.DashboardResponse[uid].Dashboard.Title)
 				}
 				for _, target := range panel.Targets {
-					res := d.GetMetricsValue(p, target.Expr)
+					res := query.GetMetricsValue(p, target.Expr)
 					d.FilterResp[uid].Metric[target.Expr] = res
 
 				}
@@ -134,7 +140,7 @@ func (d *DashboardResponseData) GetDashboardMetricsFromResponse(p *Client) {
 }
 
 // FilterData will filter the dashboard data on the basis of how many rows are present in dashboard and corresponding to rows how many panels are there.
-func (d *DashboardResponseData) FilterData() {
+func Filter(d *DashboardResponseData) {
 	fd := new(FilterData)
 	fd.FilterPanel = make(map[string][]DashboardPanel)
 	title := ""

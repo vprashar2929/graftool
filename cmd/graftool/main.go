@@ -1,0 +1,42 @@
+package main
+
+import (
+	"time"
+
+	"github.com/vprashar2929/graftool/pkg/client"
+	"github.com/vprashar2929/graftool/pkg/dashboard"
+	"github.com/vprashar2929/graftool/pkg/report"
+	"gopkg.in/alecthomas/kingpin.v2"
+)
+
+var (
+	grafanaBaseURL     = kingpin.Flag("grafana.web.listen-address", "Address on which Grafana listen for UI,API").Required().String()
+	grafanaUsername    = kingpin.Flag("grafana-username", "Username for Grafana Server. If token is not specified then provide username").String()
+	grafanaPassword    = kingpin.Flag("grafana-password", "Password for Grafana Server. If token is not specified then provide password").String()
+	prometheusUsername = kingpin.Flag("prometheus-username", "Username for Prometheus Server. If token is not specified then provide username").String()
+	prometheusPassword = kingpin.Flag("prometheus-password", "Password for Prometheus Server. If token is not specified then provide password").String()
+	prometheusBaseURL  = kingpin.Flag("prometheus.web.listen-address", "Address on which Prometheus listen for UI,API").Required().String()
+	grafanaDashboard   = kingpin.Flag("grafana-dashboard", "Name of Grafana Dashboard to be monitored").Required().Strings()
+	token              = kingpin.Flag("token", "Bearer Token for connecting to Grafana/Prometheus").String()
+	//interval          = kingpin.Flag("interval", "Set interval for monitoring").Default("1m").Duration()
+)
+var (
+	startTime int64
+)
+
+func main() {
+	kingpin.UsageTemplate(kingpin.CompactUsageTemplate).Version("1.0").Author("Vibhu Prashar")
+	kingpin.CommandLine.Help = "A tool to monitor results displayed on Grafana Dashboard Panels"
+	kingpin.Parse()
+	grafanaClient := client.GetGrafanaClient(*grafanaBaseURL, *grafanaUsername, *grafanaPassword, *token)
+	d := new(dashboard.DashboardResponseData)
+	dashboard.GetDashboards(grafanaClient, d, *grafanaDashboard)
+	dashboard.GetDashboardByUID(grafanaClient, d)
+	dashboard.Filter(d)
+	prometheusClient := client.GetPrometheusClient(*prometheusBaseURL, *token, *prometheusUsername, *prometheusPassword)
+	//fmt.Println(query.GetMetricsValue(prometheusClient, "promhttp_metric_handler_requests_total"))
+	startTime = time.Now().UnixMilli()
+	dashboard.GetDashboardMetricsFromResponse(prometheusClient, d)
+	report.DisplayReport(d, grafanaBaseURL, startTime)
+
+}

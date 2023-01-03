@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	"bytes"
@@ -59,7 +59,7 @@ func New(baseURL string, cfg Config) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) request(method, requestPath string, query url.Values, body io.Reader, responseStruct interface{}) error {
+func (c *Client) Request(method, requestPath string, query url.Values, body io.Reader, responseStruct interface{}) error {
 
 	var (
 		req          *http.Request
@@ -80,7 +80,7 @@ func (c *Client) request(method, requestPath string, query url.Values, body io.R
 		if i > 0 {
 			body = bytes.NewBuffer(bodyBuffer.Bytes())
 		}
-		req, err = c.newRequest(method, requestPath, query, body)
+		req, err = c.NewRequest(method, requestPath, query, body)
 		if err != nil {
 			return err
 		}
@@ -129,7 +129,7 @@ func (c *Client) request(method, requestPath string, query url.Values, body io.R
 	return nil
 }
 
-func (c *Client) newRequest(method, requestPath string, query url.Values, body io.Reader) (*http.Request, error) {
+func (c *Client) NewRequest(method, requestPath string, query url.Values, body io.Reader) (*http.Request, error) {
 	url := c.baseURL
 	url.Path = path.Join(url.Path, requestPath)
 	url.RawQuery = query.Encode()
@@ -157,4 +157,41 @@ func (c *Client) newRequest(method, requestPath string, query url.Values, body i
 	}
 	req.Header.Add("Content-Type", "application/json")
 	return req, err
+}
+
+// GetGrafanaClient will create a client for Grafana HTTP URL
+func GetGrafanaClient(baseURL, username, password, token string) *Client {
+	var c *Client
+	var err error
+	if username != "" && password != "" {
+		c, err = New(fmt.Sprintf("http://%s", baseURL), Config{BaseAuth: url.UserPassword(username, password)})
+	} else if token != "" {
+		c, err = New(fmt.Sprintf("http://%s", baseURL), Config{APIKEY: token})
+	} else {
+		log.Fatal("Please provide either username/password or Token")
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+	return c
+}
+
+// GetPrometheusClient will create a client for Prometheus HTTP URL
+func GetPrometheusClient(baseURL, token, promusername, prompassword string) *Client {
+	var p *Client
+	var err error
+	if promusername != "" && prompassword != "" {
+		p, err = New(fmt.Sprintf("http://%s", baseURL), Config{BaseAuth: url.UserPassword(promusername, prompassword)})
+	} else {
+		p, err = New(fmt.Sprintf("http://%s", baseURL), Config{})
+	}
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Prometheus Client Error: "), err)
+	}
+	return p
+}
+
+func GetRequest(method, url string, c *Client, params url.Values, resp interface{}) error {
+	err := c.Request(method, url, params, nil, &resp)
+	return err
 }

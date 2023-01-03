@@ -23,8 +23,8 @@ go install <url>
 ```
 Build using,
 ```
-cd cmd/
-go build -o graftool
+cd cmd/graftool
+go build
 ```
 ## Usage
 ```

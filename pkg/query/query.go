@@ -1,9 +1,12 @@
-package main
+package query
 
 import (
 	"fmt"
 	"log"
 	"net/url"
+
+	"github.com/vprashar2929/graftool/pkg/client"
+	"github.com/vprashar2929/graftool/pkg/parse"
 )
 
 type MetricMetadata struct {
@@ -25,16 +28,16 @@ type MetricSearchResponse struct {
 }
 
 // MetricSearch will query the prometheus HTTP API from the required metrics
-func (c *Client) MetricSearch(params url.Values) (resp MetricSearchResponse, err error) {
-	err = c.request("GET", "/api/v1/query", params, nil, &resp)
+func MetricSearch(params url.Values, p *client.Client) (resp MetricSearchResponse, err error) {
+	err = client.GetRequest("GET", "/api/v1/query", p, params, &resp)
 	return
 }
 
 // GetMetricsValue will fetch the metric value from the response
-func (d *DashboardResponseData) GetMetricsValue(p *Client, query string) []MetricResult {
+func GetMetricsValue(p *client.Client, query string) []MetricResult {
 	pquery := make(url.Values)
-	pquery.Set("query", ParseQuery(query, "", "node-exporter.dashboard-testing.svc.cluster.local:9100", "node-exporter", "5m"))
-	presp, err := p.MetricSearch(pquery)
+	pquery.Set("query", parse.ParseQuery(query, "", "node-exporter.dashboard-testing.svc.cluster.local:9100", "node-exporter", "5m"))
+	presp, err := MetricSearch(pquery, p)
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Prometheus Error: "), err)
 	}
