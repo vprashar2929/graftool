@@ -36,7 +36,11 @@ func MetricSearch(params url.Values, p *client.Client) (resp MetricSearchRespons
 // GetMetricsValue will fetch the metric value from the response
 func GetMetricsValue(p *client.Client, query string) []MetricResult {
 	pquery := make(url.Values)
-	pquery.Set("query", parse.ParseQuery(query, "", "node-exporter.dashboard-testing.svc.cluster.local:9100", "node-exporter", "5m"))
+	q, err := parse.ParseQuery(query, "", "node-exporter.dashboard-testing.svc.cluster.local:9100", "node-exporter", "5m")
+	if err != nil {
+		return nil //TODO: Return error from here
+	}
+	pquery.Set("query", q)
 	presp, err := MetricSearch(pquery, p)
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Prometheus Error: "), err)

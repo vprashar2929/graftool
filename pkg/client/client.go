@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/go-cleanhttp"
 )
 
-// Creating Grafana API client
+// Creating API client
 type Client struct {
 	config  Config
 	baseURL url.URL
@@ -40,7 +40,7 @@ type Config struct {
 	NumRetries int
 }
 
-// Create a new Grafana client
+// Create a new Client
 func New(baseURL string, cfg Config) (*Client, error) {
 	u, err := url.Parse(baseURL)
 	if err != nil {
@@ -177,11 +177,13 @@ func GetGrafanaClient(baseURL, username, password, token string) *Client {
 }
 
 // GetPrometheusClient will create a client for Prometheus HTTP URL
-func GetPrometheusClient(baseURL, token, promusername, prompassword string) *Client {
+func GetPrometheusClient(baseURL, token, username, password string) *Client {
 	var p *Client
 	var err error
-	if promusername != "" && prompassword != "" {
-		p, err = New(fmt.Sprintf("http://%s", baseURL), Config{BaseAuth: url.UserPassword(promusername, prompassword)})
+	if username != "" && password != "" {
+		p, err = New(fmt.Sprintf("http://%s", baseURL), Config{BaseAuth: url.UserPassword(username, password)})
+	} else if token != "" {
+		p, err = New(fmt.Sprintf("http://%s", baseURL), Config{APIKEY: token})
 	} else {
 		p, err = New(fmt.Sprintf("http://%s", baseURL), Config{})
 	}
