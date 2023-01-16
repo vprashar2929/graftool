@@ -1,6 +1,7 @@
 package parse
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"math/big"
@@ -18,11 +19,16 @@ func ParseEpoch(timestamp interface{}) time.Time {
 	return time.Unix(i, 0)
 }
 
-func ParseQuery(query, namespace, node, job, interval string) string {
-	if strings.Contains(query, "$node") || strings.Contains(query, "$job") || strings.Contains(query, "$namespace") || strings.Contains(query, "$interval") || strings.Contains(query, "$__rate_interval") {
-		replacer := strings.NewReplacer("$node", node, "$job", job, "$namespace", namespace, "$interval", interval, "$__rate_interval", interval)
-		resquery := replacer.Replace(query)
-		return resquery
+func ParseQuery(query, namespace, node, job, interval string) (string, error) {
+	if len(query) > 0 {
+		if strings.Contains(query, "$node") || strings.Contains(query, "$job") || strings.Contains(query, "$namespace") || strings.Contains(query, "$interval") || strings.Contains(query, "$__rate_interval") {
+			replacer := strings.NewReplacer("$node", node, "$job", job, "$namespace", namespace, "$interval", interval, "$__rate_interval", interval)
+			resquery := replacer.Replace(query)
+			return resquery, nil
+		}
+	} else {
+		return "", errors.New("No query to parse")
 	}
-	return query
+
+	return query, nil
 }
