@@ -18,13 +18,23 @@ var (
 	prometheusBaseURL  = kingpin.Flag("prometheus.web.listen-address", "Address on which Prometheus listen for UI,API").Required().String()
 	grafanaDashboard   = kingpin.Flag("grafana-dashboard", "Name of Grafana Dashboard to be monitored").Required().Strings()
 	token              = kingpin.Flag("token", "Bearer Token for connecting to Grafana/Prometheus").String()
-	//interval          = kingpin.Flag("interval", "Set interval for monitoring").Default("1m").Duration()
+	interval           = kingpin.Flag("interval", "Set interval for monitoring").Duration()
+	step               = kingpin.Flag("step", "Step to pool the dashboard response. Should be less than interval").Duration()
 )
 var (
-	startTime int64
+	fromTime int64
+
+	startTime = time.Now()
 )
 
+func process(prometheusClient *client.Client, d *dashboard.DashboardResponseData) {
+	fromTime = time.Now().UnixMilli()
+	dashboard.GetDashboardMetricsFromResponse(prometheusClient, d)
+	report.DisplayReport(d, grafanaBaseURL, fromTime)
+}
+
 func main() {
+
 	kingpin.UsageTemplate(kingpin.CompactUsageTemplate).Version("1.0").Author("Vibhu Prashar")
 	kingpin.CommandLine.Help = "A tool to monitor results displayed on Grafana Dashboard Panels"
 	kingpin.Parse()
@@ -34,9 +44,14 @@ func main() {
 	dashboard.GetDashboardByUID(grafanaClient, d)
 	dashboard.Filter(d)
 	prometheusClient := client.GetPrometheusClient(*prometheusBaseURL, *token, *prometheusUsername, *prometheusPassword)
-	//fmt.Println(query.GetMetricsValue(prometheusClient, "promhttp_metric_handler_requests_total"))
-	startTime = time.Now().UnixMilli()
-	dashboard.GetDashboardMetricsFromResponse(prometheusClient, d)
-	report.DisplayReport(d, grafanaBaseURL, startTime)
+	dur, _ := time.ParseDuration("0s")
+	if *interval != dur && *step != dur {
+		for time.Since(startTime).Truncate(*interval) != *interval {
+			process(prometheusClient, d)
+			time.Sleep(*step)
+		}
+	} else {
+		process(prometheusClient, d)
+	}
 
 }

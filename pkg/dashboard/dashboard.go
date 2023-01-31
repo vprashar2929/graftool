@@ -3,7 +3,10 @@ package dashboard
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"net/url"
+	"strings"
+	"time"
 
 	"github.com/vprashar2929/graftool/pkg/client"
 	"github.com/vprashar2929/graftool/pkg/query"
@@ -79,6 +82,16 @@ func FolderDashboardSearch(params url.Values, c *client.Client) (resp []FolderDa
 	return resp, err
 }
 
+func getRandomString() string {
+	chars := "abcdefghijklmnopqrstuvwxyz0123456789"
+	seed := rand.New(rand.NewSource(time.Now().UnixNano()))
+	buffer := make([]byte, 8)
+	for index := range buffer {
+		buffer[index] = chars[seed.Intn(len(chars))]
+	}
+	return string(buffer)
+}
+
 // GetDashboards will fetch the uid of dashboards which matches the search
 func GetDashboards(c *client.Client, d *DashboardResponseData, dashboards []string) {
 	d.URL = make(map[string]string)
@@ -90,8 +103,9 @@ func GetDashboards(c *client.Client, d *DashboardResponseData, dashboards []stri
 			log.Fatal(err)
 		}
 		for _, val := range resp {
-			d.UID = append(d.UID, val.UID)
-			d.URL[val.UID] = val.URL
+			uid := val.UID + getRandomString()
+			d.UID = append(d.UID, uid)
+			d.URL[uid] = val.URL
 		}
 	}
 
@@ -104,7 +118,7 @@ func GetDashboardByUID(c *client.Client, d *DashboardResponseData) {
 		log.Fatal("No Dashboard Exists on Grafana")
 	}
 	for _, uid := range d.UID {
-		res, err := DashboardByUID(uid, c)
+		res, err := DashboardByUID(strings.Split(d.URL[uid], "/")[2], c)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -133,20 +147,18 @@ func GetDashboardMetricsFromResponse(p *client.Client, d *DashboardResponseData)
 
 				}
 			}
-
 		}
-
 	}
 }
 
 // FilterData will filter the dashboard data on the basis of how many rows are present in dashboard and corresponding to rows how many panels are there.
 func Filter(d *DashboardResponseData) {
-	fd := new(FilterData)
-	fd.FilterPanel = make(map[string][]DashboardPanel)
-	title := ""
 	d.FilterResp = make(map[string]*FilterData)
 	d.Rows = make(map[string][]string)
 	for _, uid := range d.UID {
+		fd := new(FilterData)
+		fd.FilterPanel = make(map[string][]DashboardPanel)
+		title := ""
 		if len(d.DashboardResponse[uid].Dashboard.Panels) == 0 {
 			log.Fatal("No Panels found in Grafana Dashboard -> ", d.DashboardResponse[uid].Dashboard.Title)
 		}
