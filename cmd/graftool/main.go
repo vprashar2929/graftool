@@ -5,6 +5,7 @@ import (
 
 	"github.com/vprashar2929/graftool/pkg/client"
 	"github.com/vprashar2929/graftool/pkg/dashboard"
+	"github.com/vprashar2929/graftool/pkg/parse"
 	"github.com/vprashar2929/graftool/pkg/report"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -27,9 +28,9 @@ var (
 	startTime = time.Now()
 )
 
-func process(prometheusClient *client.Client, d *dashboard.DashboardResponseData) {
+func process(prometheusClient *client.Client, d *dashboard.DashboardResponseData, conf *parse.Config) {
 	fromTime = time.Now().UnixMilli()
-	dashboard.GetDashboardMetricsFromResponse(prometheusClient, d)
+	dashboard.GetDashboardMetricsFromResponse(prometheusClient, d, conf)
 	report.DisplayReport(d, grafanaBaseURL, fromTime)
 }
 
@@ -38,6 +39,7 @@ func main() {
 	kingpin.UsageTemplate(kingpin.CompactUsageTemplate).Version("1.0").Author("Vibhu Prashar")
 	kingpin.CommandLine.Help = "A tool to monitor results displayed on Grafana Dashboard Panels"
 	kingpin.Parse()
+	conf := parse.ParseConfig()
 	grafanaClient := client.GetGrafanaClient(*grafanaBaseURL, *grafanaUsername, *grafanaPassword, *token)
 	d := new(dashboard.DashboardResponseData)
 	dashboard.GetDashboards(grafanaClient, d, *grafanaDashboard)
@@ -47,11 +49,11 @@ func main() {
 	dur, _ := time.ParseDuration("0s")
 	if *interval != dur && *step != dur {
 		for time.Since(startTime).Truncate(*interval) != *interval {
-			process(prometheusClient, d)
+			process(prometheusClient, d, conf)
 			time.Sleep(*step)
 		}
 	} else {
-		process(prometheusClient, d)
+		process(prometheusClient, d, conf)
 	}
 
 }

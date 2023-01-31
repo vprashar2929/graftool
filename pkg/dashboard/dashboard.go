@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/vprashar2929/graftool/pkg/client"
+	"github.com/vprashar2929/graftool/pkg/parse"
 	"github.com/vprashar2929/graftool/pkg/query"
 )
 
@@ -127,7 +128,7 @@ func GetDashboardByUID(c *client.Client, d *DashboardResponseData) {
 }
 
 // GetDashboardMetricsFromResponse fetch metric value from prometheus
-func GetDashboardMetricsFromResponse(p *client.Client, d *DashboardResponseData) {
+func GetDashboardMetricsFromResponse(p *client.Client, d *DashboardResponseData, conf *parse.Config) {
 	for _, uid := range d.UID {
 		d.FilterResp[uid].Metric = make(map[string][]query.MetricResult)
 		if len(d.Rows[uid]) == 0 {
@@ -142,7 +143,7 @@ func GetDashboardMetricsFromResponse(p *client.Client, d *DashboardResponseData)
 					log.Fatal("No Metrics found in Grafana Dashboard -> ", d.DashboardResponse[uid].Dashboard.Title)
 				}
 				for _, target := range panel.Targets {
-					res := query.GetMetricsValue(p, target.Expr)
+					res := query.GetMetricsValue(p, target.Expr, conf)
 					d.FilterResp[uid].Metric[target.Expr] = res
 
 				}

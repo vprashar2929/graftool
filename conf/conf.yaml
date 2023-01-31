@@ -1,0 +1,10 @@
+# This is the sample config file. It contains the list of variables that are used in the dashboard. User can change or add new variables according to there requirement. 
+# For now in case of adding new variable you have to define in the config file as well as add new parameter inside `replacer := strings.NewReplacer("$node", conf.Variables.Node, "$job", conf.Variables.Job, "$namespace", conf.Variables.Namespace, "$interval", conf.Variables.Interval, "$__rate_interval", conf.Variables.RateInterval)` in parse.go. Will find some better alternative for this in future
+
+# TODO: Add support for multiple dashboard variable definition. Currently it supports declaration of variables for only single dashboard
+variables:
+  node: "node-exporter:9100"
+  namespace: ""
+  job: "node-exporter"
+  interval: ""
+  rate_interval: "5m"
