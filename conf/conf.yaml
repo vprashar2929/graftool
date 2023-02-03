@@ -4,7 +4,7 @@
 # TODO: Add support for multiple dashboard variable definition. Currently it supports declaration of variables for only single dashboard
 variables:
   node: "node-exporter:9100"
-  namespace: ""
+  namespace: "namespace"
   job: "node-exporter"
-  interval: ""
+  interval: "5m"
   rate_interval: "5m"
