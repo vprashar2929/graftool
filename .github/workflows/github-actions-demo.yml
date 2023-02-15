@@ -16,17 +16,19 @@ jobs:
         run: |
           ls ${{ github.workspace }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
-      - name: Git Clone microshift repo
-        uses: sudosubin/git-clone-action@v1.0.1
-        with:
-          repository: openshift/microshift
-          platform: github
-          path: /home/runner/work/microshift
-      - name: List the contents of cloned repository
-        run: ls /home/runner/work/microshift
-      - name: Run make on the cloned repo
-        run: make /home/runner/work/microshift
-      - name: List the contents of cloned repository
-        run: ls /home/runner/work/microshift/_output/bin
+      - name: Print CWD
+        run: echo "$PWD"
+#       - name: Git Clone microshift repo
+#         uses: sudosubin/git-clone-action@v1.0.1
+#         with:
+#           repository: openshift/microshift
+#           platform: github
+#           path: microshift
+#       - name: List the contents of cloned repository
+#         run: ls /home/runner/work/microshift
+#       - name: Run make on the cloned repo
+#         run: make /home/runner/work/microshift
+#       - name: List the contents of cloned repository
+#         run: ls /home/runner/work/microshift/_output/bin
       
           
