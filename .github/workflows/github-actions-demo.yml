@@ -17,13 +17,13 @@ jobs:
           ls ${{ github.workspace }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
       - name: Create temp directory
-        run: mkdir -p /tmp/microshift
+        run: mkdir -p /tmp/repo
       - name: Git Clone microshift repo
         uses: sudosubin/git-clone-action@v1.0.1
         with:
           repository: openshift/microshift
           platform: github
-          path: /tmp/microshift
+          path: tmp/repo
       - name: List the contents of cloned repository
-        run: ls /tmp/microshift/
+        run: ls /tmp/repo
           
