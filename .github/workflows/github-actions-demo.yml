@@ -28,10 +28,10 @@ jobs:
         run: ls 
         working-directory: ./tmp/microshift
       - name: Run make on the cloned repo
-        run: make
-        working-directory: ./tmp/microshift
+        run: go build
+        working-directory: ./tmp/microshift/cmd/microshift
       - name: List the contents of cloned repository
         run: ls
-        working-directory: ./tmp/microshift/_output/bin
+        working-directory: ./tmp/microshift/cmd/microshift
       
           
