@@ -19,7 +19,15 @@ jobs:
       - name: Print CWD
         run: echo "$PWD"
       - name: Install crio
-        run: sudo apt install cri-o cri-o-runc -y
+        run: |
+          echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/ /" > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+          echo "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/1.17/xUbuntu_20.04/ /" > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:1.17.list
+
+          curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/1.17/xUbuntu_20.04/Release.key | apt-key add -
+          curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/Release.key | apt-key add -
+
+          sudo apt-get update
+          sudo apt install cri-o cri-o-runc -y
       - name: Check crio service
         run: sudo systemctl status crio
 #       - name: Git Clone microshift repo
