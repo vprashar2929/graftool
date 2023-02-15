@@ -26,6 +26,8 @@ jobs:
           curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/1.17/xUbuntu_20.04/Release.key | sudo apt-key add -
           curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/Release.key | sudo apt-key add -
 
+      - name: Run apt command
+        run: |
           sudo apt-get update
           sudo apt-get install cri-o cri-o-runc -y
       - name: Check crio service
