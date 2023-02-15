@@ -54,7 +54,7 @@ jobs:
         run: ls
         working-directory: ./tmp/microshift/cmd/microshift
       - name: Run the binary
-        run: sudo ./microshift run
+        run: sudo ./microshift run --help
         working-directory: ./tmp/microshift/cmd/microshift
       
           
