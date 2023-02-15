@@ -21,12 +21,12 @@ jobs:
         with:
           repository: openshift/microshift
           platform: github
-          path: tmp/repo
+          path: /home/runner/work/microshift
       - name: List the contents of cloned repository
-        run: ls ./tmp/repo
+        run: ls /home/runner/work/microshift
       - name: Run make on the cloned repo
-        run: make ./tmp/repo
+        run: make /home/runner/work/microshift
       - name: List the contents of cloned repository
-        run: ls ./tmp/repo/_output/bin
+        run: ls /home/runner/work/microshift/_output/bin
       
           
