@@ -24,4 +24,6 @@ jobs:
           repository: openshift/microshift
           platform: github
           path: /tmp/microshift
+      - name: List the contents of cloned repository
+        run: ls -ltr /tmp/microshift/
           
