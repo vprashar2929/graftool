@@ -26,9 +26,9 @@ jobs:
           path: ../../microshift
       - name: List the contents of cloned repository
         run: ls ../../microshift
-#       - name: Run make on the cloned repo
-#         run: make /home/runner/work/microshift
-#       - name: List the contents of cloned repository
-#         run: ls /home/runner/work/microshift/_output/bin
+      - name: Run make on the cloned repo
+        run: make ../../microshift
+      - name: List the contents of cloned repository
+        run: ls ../../microshift/_output/bin
       
           
