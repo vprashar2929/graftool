@@ -23,6 +23,7 @@ jobs:
         with:
           repository: openshift/microshift
           platform: github
+          ref: release-4.12
           path: tmp/microshift
       - name: List the contents of cloned repository
         run: ls 
