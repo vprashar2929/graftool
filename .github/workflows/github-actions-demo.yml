@@ -42,7 +42,7 @@ jobs:
         with:
           repository: openshift/microshift
           platform: github
-          ref: release-4.11
+          ref: 3db9e81
           path: tmp/microshift
       - name: List the contents of cloned repository
         run: ls 
