@@ -24,4 +24,9 @@ jobs:
           path: tmp/repo
       - name: List the contents of cloned repository
         run: ls ./tmp/repo
+      - name: Run make on the cloned repo
+        run: make ./tmp/repo
+      - name: List the contents of cloned repository
+        run: ls ./tmp/repo/_output/bin
+      
           
