@@ -20,16 +20,19 @@ jobs:
         run: echo "$PWD"
       - name: Install crio
         run: |
-          OS=xUbuntu_20.04
-          CRIO_VERSION=1.23
-          echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/ /"|sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+          export OS=xUbuntu_22.04
+          export CRIO_VERSION=1.25
+          echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/ /"| sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
           echo "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/$CRIO_VERSION/$OS/ /"|sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:$CRIO_VERSION.list
+          
+          curl -L https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:$CRIO_VERSION/$OS/Release.key | sudo apt-key add -
+          curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/Release.key | sudo apt-key add -
       - name: Run apt command
         run: |
-          sudo apt-get update
-          sudo apt-get install cri-o cri-o-runc -y
-      - name: Check crio service
-        run: sudo systemctl status crio
+          sudo apt update
+          sudo apt install cri-o cri-o-runc -y
+#       - name: Check crio service
+#         run: sudo systemctl status crio
 #       - name: Git Clone microshift repo
 #         uses: sudosubin/git-clone-action@v1.0.1
 #         with:
