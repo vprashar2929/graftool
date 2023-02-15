@@ -37,24 +37,24 @@ jobs:
           sudo systemctl enable crio
       - name: Check crio service
         run: sudo systemctl status crio
-#       - name: Git Clone microshift repo
-#         uses: sudosubin/git-clone-action@v1.0.1
-#         with:
-#           repository: openshift/microshift
-#           platform: github
-#           ref: release-4.12
-#           path: tmp/microshift
-#       - name: List the contents of cloned repository
-#         run: ls 
-#         working-directory: ./tmp/microshift
-#       - name: Run make on the cloned repo
-#         run: go build
-#         working-directory: ./tmp/microshift/cmd/microshift
-#       - name: List the contents of cloned repository
-#         run: ls
-#         working-directory: ./tmp/microshift/cmd/microshift
-#       - name: Run the binary
-#         run: sudo ./microshift run
-#         working-directory: ./tmp/microshift/cmd/microshift
+      - name: Git Clone microshift repo
+        uses: sudosubin/git-clone-action@v1.0.1
+        with:
+          repository: openshift/microshift
+          platform: github
+          ref: release-4.12
+          path: tmp/microshift
+      - name: List the contents of cloned repository
+        run: ls 
+        working-directory: ./tmp/microshift
+      - name: Run make on the cloned repo
+        run: go build
+        working-directory: ./tmp/microshift/cmd/microshift
+      - name: List the contents of cloned repository
+        run: ls
+        working-directory: ./tmp/microshift/cmd/microshift
+      - name: Run the binary
+        run: sudo ./microshift run
+        working-directory: ./tmp/microshift/cmd/microshift
       
           
