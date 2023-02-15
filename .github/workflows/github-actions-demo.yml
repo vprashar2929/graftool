@@ -42,19 +42,17 @@ jobs:
         with:
           repository: openshift/microshift
           platform: github
-#           ref: release-4.13
-          path: ${{ github.workspace }}/tmp/microshift
+          ref: release-4.11
+          path: tmp/microshift
       - name: List the contents of cloned repository
         run: ls 
-        working-directory: .${{ github.workspace }}/tmp/microshift
+        working-directory: ./tmp/microshift
       - name: Run make on the cloned repo
         run: go build
-        working-directory: .${{ github.workspace }}/tmp/microshift/cmd/microshift
+        working-directory: ./tmp/microshift/cmd/microshift
       - name: List the contents of cloned repository
         run: ls
-        working-directory: .${{ github.workspace }}/tmp/microshift/cmd/microshift
+        working-directory: ./tmp/microshift/cmd/microshift
       - name: Run the binary
-        run: sudo ./microshift run
-        working-directory: .${{ github.workspace }}/tmp/microshift/cmd/microshift
-      
-          
+        run: sudo ./microshift run --help
+        working-directory: ./tmp/microshift/cmd/microshift
