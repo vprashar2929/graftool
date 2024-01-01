@@ -22,6 +22,7 @@ var (
 	interval           = kingpin.Flag("interval", "Set interval for monitoring").Duration()
 	step               = kingpin.Flag("step", "Step to pool the dashboard response. Should be less than interval").Duration()
 )
+
 var (
 	fromTime int64
 
@@ -35,7 +36,6 @@ func process(prometheusClient *client.Client, d *dashboard.DashboardResponseData
 }
 
 func main() {
-
 	kingpin.UsageTemplate(kingpin.CompactUsageTemplate).Version("1.0").Author("Vibhu Prashar")
 	kingpin.CommandLine.Help = "A tool to monitor results displayed on Grafana Dashboard Panels"
 	kingpin.Parse()
@@ -55,5 +55,4 @@ func main() {
 	} else {
 		process(prometheusClient, d, conf)
 	}
-
 }
