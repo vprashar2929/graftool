@@ -47,9 +47,9 @@ jobs:
        
       - name: "✏️ Generate release changelog"
         id: generate-release-changelog
-        uses: heinrichreimer/action-github-changelog-generator@v2.4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+        uses: Bullrich/generate-release-changelog@master
+        env:
+          REPO: ${{ github.repository }}
 
       - name: Create Release
         id: create_release
