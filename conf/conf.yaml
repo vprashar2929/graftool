@@ -6,5 +6,5 @@ variables:
   node: "node-exporter:9100"
   namespace: "namespace"
   job: "node-exporter"
-  interval: "15m"
-  rate_interval: "15m"
+  interval: "5m"
+  rate_interval: "5m"
