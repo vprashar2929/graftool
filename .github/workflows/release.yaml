@@ -55,7 +55,6 @@ jobs:
           release_name: "v${{github.event.inputs.tag}}"
           draft: false
           prerelease: false
-      - created
   changelog:
     runs-on: ubuntu-latest
     needs: build
