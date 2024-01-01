@@ -44,6 +44,12 @@ jobs:
       - name: Push Release tag
         run: |
           git push --follow-tags
+       
+      - name: "✏️ Generate release changelog"
+        id: generate-release-changelog
+        uses: heinrichreimer/action-github-changelog-generator@v2.4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Release
         id: create_release
@@ -54,12 +60,5 @@ jobs:
           tag_name: "v${{ github.event.inputs.tag }}"
           release_name: "v${{github.event.inputs.tag}}"
           draft: false
+          body: ${{ steps.generate-release-changelog.outputs.changelog }}
           prerelease: false
-
-      - name: "✏️ Generate release changelog"
-        uses: heinrichreimer/action-github-changelog-generator@v2.4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }} 
-
-
-
