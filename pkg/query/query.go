@@ -1,7 +1,6 @@
 package query
 
 import (
-	"fmt"
 	"log"
 	"net/url"
 
@@ -23,8 +22,8 @@ type MetricsData struct {
 	Result     []MetricResult `json:"result"`
 }
 type MetricSearchResponse struct {
-	Status string       `json:"status"`
 	Data   *MetricsData `json:"data"`
+	Status string       `json:"status"`
 }
 
 // MetricSearch will query the prometheus HTTP API from the required metrics
@@ -43,7 +42,7 @@ func GetMetricsValue(p *client.Client, query string, conf *parse.Config) []Metri
 	pquery.Set("query", q)
 	presp, err := MetricSearch(pquery, p)
 	if err != nil {
-		log.Fatal(fmt.Sprintf("Prometheus Error: "), err)
+		log.Fatal(err)
 	}
 	return presp.Data.Result
 }
