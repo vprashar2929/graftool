@@ -19,47 +19,46 @@ type DashboardTargets struct {
 }
 type DashboardPanel struct {
 	DataSource  map[string]string  `json:"datasource"`
-	Targets     []DashboardTargets `json:"targets"`
 	Description string             `json:"description"`
 	Title       string             `json:"title"`
 	Type        string             `json:"type"`
+	Targets     []DashboardTargets `json:"targets"`
 }
 type FilterData struct {
 	FilterPanel map[string][]DashboardPanel
 	Metric      map[string][]query.MetricResult
 }
 type DashboardResponse struct {
-	Panels []DashboardPanel `json:"panels"`
 	Title  string           `json:"title"`
 	UID    string           `json:"uid"`
-	// Annotations map[string]interface{} `json:"annotations"`
+	Panels []DashboardPanel `json:"panels"`
 }
 
 type Response struct {
 	Dashboard DashboardResponse `json:"dashboard"`
 }
 type FolderDashboardSearchResponse struct {
-	ID          uint     `json:"id"`
+	Type        string   `json:"type"`
 	UID         string   `json:"uid"`
 	Title       string   `json:"title"`
 	URI         string   `json:"uri"`
 	URL         string   `json:"url"`
 	Slug        string   `json:"slug"`
-	Type        string   `json:"type"`
-	Tags        []string `json:"tags"`
-	IsStarred   bool     `json:"isStarred"`
-	FolderID    uint     `json:"folderId"`
 	FolderUID   string   `json:"folderUid"`
 	FolderTitle string   `json:"folderTitle"`
 	FolderURL   string   `json:"folderUrl"`
+	Tags        []string `json:"tags"`
+	ID          uint     `json:"id"`
+	FolderID    uint     `json:"folderId"`
+	IsStarred   bool     `json:"isStarred"`
 }
 
 type DashboardResponseData struct {
-	UID               []string
 	URL               map[string]string
 	DashboardResponse map[string]*Response
 	Rows              map[string][]string
 	FilterResp        map[string]*FilterData
+	UID               []string
 }
 
 func dashboard(path string, c *client.Client) (*Response, error) {

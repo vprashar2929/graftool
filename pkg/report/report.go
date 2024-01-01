@@ -30,7 +30,7 @@ func DisplayReport(d *dashboard.DashboardResponseData, grafanaBaseURL *string, s
 			}
 			t.AppendSeparator()
 		}
-		t.SetCaption(fmt.Sprint("Dashboard Link: http://%s%s?from=%d&to=%d"), *grafanaBaseURL, d.URL[uid], startTime, time.Now().UnixMilli())
+		t.SetCaption(fmt.Sprintf("Dashboard Link: http://%s%s?from=%d&to=%d"), *grafanaBaseURL, d.URL[uid], startTime, time.Now().UnixMilli())
 		t.Render()
 		t.ResetRows()
 	}
