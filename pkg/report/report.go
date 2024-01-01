@@ -23,7 +23,6 @@ func DisplayReport(d *dashboard.DashboardResponseData, grafanaBaseURL *string, s
 				for _, target := range panel.Targets {
 					if len(d.FilterResp[uid].Metric[target.Expr]) > 0 {
 						t.AppendRow(table.Row{row, panel.Title, target.Legends, parse.ParseEpoch(d.FilterResp[uid].Metric[target.Expr][0].Value[0]), d.FilterResp[uid].Metric[target.Expr][0].Value[1]})
-
 					} else {
 						t.AppendRow(table.Row{row, panel.Title, target.Legends, d.FilterResp[uid].Metric[target.Expr], d.FilterResp[uid].Metric[target.Expr]})
 					}
@@ -35,5 +34,4 @@ func DisplayReport(d *dashboard.DashboardResponseData, grafanaBaseURL *string, s
 		t.Render()
 		t.ResetRows()
 	}
-
 }

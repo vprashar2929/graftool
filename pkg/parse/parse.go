@@ -52,7 +52,6 @@ func ParseEpoch(timestamp interface{}) time.Time {
 	flt, _, err := big.ParseFloat(fmt.Sprint("", timestamp), 10, 0, big.ToNearestEven)
 	if err != nil {
 		log.Fatal(err)
-
 	}
 	i, _ := flt.Int64()
 	return time.Unix(i, 0)

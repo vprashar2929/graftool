@@ -60,7 +60,6 @@ func New(baseURL string, cfg Config) (*Client, error) {
 }
 
 func (c *Client) Request(method, requestPath string, query url.Values, body io.Reader, responseStruct interface{}) error {
-
 	var (
 		req          *http.Request
 		resp         *http.Response

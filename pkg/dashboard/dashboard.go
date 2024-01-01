@@ -32,8 +32,9 @@ type DashboardResponse struct {
 	Panels []DashboardPanel `json:"panels"`
 	Title  string           `json:"title"`
 	UID    string           `json:"uid"`
-	//Annotations map[string]interface{} `json:"annotations"`
+	// Annotations map[string]interface{} `json:"annotations"`
 }
+
 type Response struct {
 	Dashboard DashboardResponse `json:"dashboard"`
 }
@@ -69,9 +70,9 @@ func dashboard(path string, c *client.Client) (*Response, error) {
 	}
 	return result, err
 }
+
 func DashboardByUID(uid string, c *client.Client) (*Response, error) {
 	return dashboard(fmt.Sprintf("/api/dashboards/uid/%s", uid), c)
-
 }
 
 // FolderDashboardSearch uses the folder and dashboard search endpoint to find dashboards based on the params passed in.
@@ -109,7 +110,6 @@ func GetDashboards(c *client.Client, d *DashboardResponseData, dashboards []stri
 			d.URL[uid] = val.URL
 		}
 	}
-
 }
 
 // GetDashboardByUID will fetch the dashboards by uid from grafana

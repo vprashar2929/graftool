@@ -38,7 +38,7 @@ func GetMetricsValue(p *client.Client, query string, conf *parse.Config) []Metri
 	pquery := make(url.Values)
 	q, err := parse.ParseQuery(query, conf)
 	if err != nil {
-		return nil //TODO: Return error from here
+		return nil // TODO: Return error from here
 	}
 	pquery.Set("query", q)
 	presp, err := MetricSearch(pquery, p)
@@ -46,5 +46,4 @@ func GetMetricsValue(p *client.Client, query string, conf *parse.Config) []Metri
 		log.Fatal(fmt.Sprintf("Prometheus Error: "), err)
 	}
 	return presp.Data.Result
-
 }
