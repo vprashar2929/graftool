@@ -44,12 +44,12 @@ jobs:
       - name: Push Release tag
         run: |
           git push --follow-tags
-       
-      - name: "✏️ Generate release changelog"
-        id: generate-release-changelog
-        uses: Bullrich/generate-release-changelog@master
-        env:
-          REPO: ${{ github.repository }}
+  
+      - name: Generate changelog
+        id: changelog
+        uses: metcalfc/changelog-generator@v4.2.0
+        with:
+          myToken: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Release
         id: create_release
@@ -60,5 +60,5 @@ jobs:
           tag_name: "v${{ github.event.inputs.tag }}"
           release_name: "v${{github.event.inputs.tag}}"
           draft: false
-          body: ${{ steps.generate-release-changelog.outputs.changelog }}
+          body: ${{ steps.changelog.outputs.changelog }}
           prerelease: false
