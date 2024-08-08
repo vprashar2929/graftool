@@ -34,6 +34,9 @@ jobs:
       - name: Check Event JSON
         run: echo "${{ toJson(github.event) }}"
 
+      - name: Sleeping for 1min
+        run: sleep 60
+
       - name: Set latest comit status as ${{ job.status }}
         uses: myrotvorets/set-commit-status-action@master
         if: always()
