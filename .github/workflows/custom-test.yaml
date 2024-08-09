@@ -5,7 +5,7 @@ on:
 
 jobs:
   test:
-    if: github.event.issue.pull_request && toLower(github.event.comment.body) == 'test'
+    if: github.event.issue.pull_request && github.event.comment.body | toLower == '/test'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
