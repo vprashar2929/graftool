@@ -13,3 +13,8 @@ jobs:
 
       - name: Test step
         run: echo "This is a test"
+
+      - name: Call workflow
+        uses: vprashar2929/kepler/.github/workflows/dummy.yml@main
+        with:
+          pr: "1234"
