@@ -6,6 +6,13 @@ on:
 jobs:
   test:
     if: github.event.issue.pull_request && github.event.comment.body == '/test'
-    uses: vprashar2929/kepler/.github/workflows/dummy.yml@main
-    with:
-      pr: "1234"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Test step
+        run: echo "This is a test"
+
+      - name: get the pr number
+        run: echo "${{ github.event.pull_request.number }}"
