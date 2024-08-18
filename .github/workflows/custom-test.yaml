@@ -15,4 +15,8 @@ jobs:
         run: echo "This is a test"
 
       - name: get the pr number
-        run: echo "${{ github.event.number }}"
+        run: echo "pr_number=${{ github.event.issue.pull_request.number }}"
+
+      - name: get the pr number
+        run: echo "pr_number=${{ github.event.pull_request.number }}"
+
