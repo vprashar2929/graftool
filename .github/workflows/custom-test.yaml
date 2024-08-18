@@ -15,7 +15,7 @@ jobs:
         run: echo "This is a test"
 
       - name: get the pr number
-        run: echo "pr_number=${{ github.event.pull_request.head.sha }}"
+        run: echo "pr_number=${{ github.event.issue.number }}"
 
       - name: Check Event JSON
         run: echo "${{ toJson(github.event) }}"
