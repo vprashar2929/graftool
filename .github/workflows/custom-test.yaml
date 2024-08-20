@@ -31,6 +31,12 @@ jobs:
       - name: get the pr number
         run: echo "pr_number=${{ github.event.issue.number }}"
 
+      - name: Sleeping for 1min
+        run: sleep 60
+
+      - name: adding an error
+        run: exit 1
+
       - name: Check Event JSON
         run: echo "${{ toJson(github.event) }}"
 
