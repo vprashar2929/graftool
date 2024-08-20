@@ -8,8 +8,22 @@ jobs:
     if: github.event.issue.pull_request && github.event.comment.body == '/test'
     runs-on: ubuntu-latest
     steps:
+
+      - name: Get the PR branch
+        uses: xt0rted/pull-request-comment-branch@v2
+        id: comment-branch
+
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.comment-branch.outputs.head_ref }}
+
+      - name: Set latest commit status as pending
+        uses: myrotvorets/set-commit-status-action@master
+        with:
+          sha: ${{ steps.comment-branch.outputs.head_sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          status: pending
 
       - name: Test step
         run: echo "This is a test"
@@ -19,4 +33,12 @@ jobs:
 
       - name: Check Event JSON
         run: echo "${{ toJson(github.event) }}"
+
+      - name: Set latest comit status as ${{ job.status }}
+        uses: myrotvorets/set-commit-status-action@master
+        if: always()
+        with:
+          sha: ${{ steps.comment-branch.outputs.head_sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          status: ${{ job.status }}
 
