@@ -21,7 +21,7 @@ jobs:
       - name: Check if Github organization is set
         run: |
           if [ -n "${{ github.organization }}" ]; then
-            echo "organization=${{ github.organization }}
+            echo "organization=${{ github.organization }}"
           else
             echo "Github organization is not set"
           fi
