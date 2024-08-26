@@ -13,7 +13,16 @@ jobs:
         uses: xt0rted/pull-request-comment-branch@v2
         id: comment-branch
 
+      - name: Set latest commit status as pending
+        if : ${{ success() }}
+        uses: myrotvorets/set-commit-status-action@master
+        with:
+          sha: ${{ steps.comment-branch.outputs.head_sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          status: pending
+
       - name: Checkout
+        if : ${{ success() }}
         uses: actions/checkout@v3
         with:
           ref: ${{ steps.comment-branch.outputs.head_ref }}
@@ -26,12 +35,6 @@ jobs:
             echo "Github organization is not set"
           fi
 
-      - name: Set latest commit status as pending
-        uses: myrotvorets/set-commit-status-action@master
-        with:
-          sha: ${{ steps.comment-branch.outputs.head_sha }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          status: pending
 
       - name: Test step
         run: echo "This is a test"
