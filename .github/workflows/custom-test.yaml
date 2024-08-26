@@ -21,11 +21,17 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           status: pending
 
-      - name: Checkout
-        if : ${{ success() }}
+      # - name: Checkout
+      #   if : ${{ success() }}
+      #   uses: actions/checkout@v3
+      #   with:
+      #     ref: ${{ steps.comment-branch.outputs.head_ref }}
+      
+      - name: Checkout Code
         uses: actions/checkout@v3
         with:
-          ref: ${{ steps.comment-branch.outputs.head_ref }}
+          ref: ${{ github.event.issue.pull_request.head.ref }}
+          repository: ${{ github.event.issue.pull_request.head.repo.full_name }}
 
       - name: Check if Github organization is set
         run: |
