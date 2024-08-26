@@ -13,6 +13,9 @@ jobs:
         uses: xt0rted/pull-request-comment-branch@v2
         id: comment-branch
 
+      - name: Output the details
+        run: |
+          echo "${{ toJson(steps.comment-branch.outputs) }}"
       - name: Set latest commit status as pending
         if : ${{ success() }}
         uses: myrotvorets/set-commit-status-action@master
